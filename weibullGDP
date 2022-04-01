@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Sep 30 19:02:34 2020
+
+@author: walkerwhitfield
+"""
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+import seaborn as sns
+
+datadir = "/Users/walkerwhitfield/Desktop/Research/"
+dataset = pd.read_excel(datadir + "TestLocationsXLS.xls")
+data = dataset['ws(mph)MI'].tolist()
+data = [x for x in data if str(x) !='nan'] #removes nan values
+print(data)
+
+
+loc = 50 #location of dataset to be plotted
+mean = sum(data)/len(data)
+var = np.var(data)
+scale = 0.5*(mean-loc)*(((mean-loc)**2)/var+1)
+shape = 0.5*(((mean-loc)**2)/var-1)
+print("scale is:",scale, "and", "shape is:", shape)
+
+
+winds = list(range(50,149)) #range of winds from which gumbel parameters are calculated for theoretical
+
+#gumbel paramters are calculated at the point data and the theoretical distribution is plotted
+#with the wind speed values specified above
+
+gpd = []
+for rp in winds:
+    pdf = (scale**(-1))*(1-shape*(rp-loc)/scale)**(1/shape-1)
+    gpd.append((pdf))
+    #print(rp, gpd)
+
+#gumbel = ['%.3f' % elem for elem in gumbel]
+divgpd = sum(gpd)
+gpdnorm = [y/divgpd for y in gpd] #normalizes the data so sum=1
+
+
+#plt.hist(data, bins = 20, density=True)
+plt.plot(winds, gpd, label = 'GPD Fit')
+
+
+ax = sns.distplot(data, bins = 15)
+
